@@ -1,0 +1,52 @@
+#!/home/opendatacity/.venv/bin/python2.7
+
+import sys
+import os
+import re
+import urllib
+import urlparse
+import json, requests
+from munin import MuninPlugin
+
+class Configuration :
+	
+	url="http://nsa.opendatacity.de/nodes.json"
+
+
+class MuninNSACountPlugin(MuninPlugin):
+	title = "NSA count for %s"
+	# args = "--base 1000"
+	vlabel = "count for all hosts"
+	category = "nsa"
+	hostname = urlparse.urlparse(Configuration.url).netloc
+	key="count"
+	fields = (
+		('count', dict(
+			label = "Requests",
+			type = "DERIVE",
+			min = "0",
+			draw = "LINE2",
+		)),
+	)
+
+	def __init__(self) :
+		self.service = (sys.argv[0].rsplit('_', 1)[-1] or "tilethief") 
+		self.key="count"
+		self.title="NSA %s for %s service via %s" % (self.key,self.service,self.hostname)
+		self.url=Configuration.url
+		self.vlabel="%s-%s" % (self.service,self.key)
+		keys=self.get_info(self.service,self.key).keys()
+		self.fields=[ (a, dict( label=self.key, type="DERIVE", min=0 )) for a in keys ]
+		self.info="The value of %s for every host running the service %s. Data source is %s." % (self.key, self.service,Configuration.url)
+		super(MuninPlugin, self).__init__()
+		
+	def get_info(self,service,key) :
+		status=json.loads(requests.get(self.url).content)
+		return dict([(a["node"].replace(".","_"),a[key]) for a in status if a["service"]==service])
+		
+	def execute(self) :
+		return self.get_info(self.service,self.key)		
+
+ 
+if __name__ == "__main__":
+	MuninNSACountPlugin().run()

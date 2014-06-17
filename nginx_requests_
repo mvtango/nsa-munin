@@ -1,0 +1,36 @@
+#!/home/opendatacity/.venv/bin/python2.7
+import sys
+import os
+import re
+import urllib
+from munin.nginx import MuninNginxPlugin
+
+class MuninNginxRequestsPlugin(MuninNginxPlugin):
+    title = "Nginx Requests"
+    args = "--base 1000"
+    vlabel = "Requests per second"
+    hostname = "localhost"
+    fields = (
+        ('request', dict(
+            label = "Requests",
+            type = "DERIVE",
+            min = "0",
+            draw = "LINE2",
+        )),
+    )
+
+    def __init__(self) :
+        self.hostname = (sys.argv[0].rsplit('_', 1)[-1] or "localhost") 
+	self.title="Nginx Requests for %s" % self.hostname
+	self.url="http://%s/nginx_status" % self.hostname
+        super(MuninNginxPlugin, self).__init__()	
+
+
+    def execute(self):
+	print self.hostname
+        return dict(
+            request = self.get_status()['requests'],
+        )
+
+if __name__ == "__main__":
+    MuninNginxRequestsPlugin().run()
