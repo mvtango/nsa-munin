@@ -26,7 +26,7 @@ class MuninNSACountPlugin(MuninPlugin):
 			type = "DERIVE",
 			min = "0",
 			draw = "LINE2",
-		)),
+		)),	
 	)
 
 	def __init__(self) :

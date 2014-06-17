@@ -36,7 +36,7 @@ class MuninNSACountPlugin(MuninPlugin):
 		self.url=Configuration.url
 		self.vlabel="%s-%s" % (self.service,self.key)
 		keys=self.get_info(self.service,self.key).keys()
-		self.fields=[ (a, dict( label=self.key, type="DERIVE", min=0 )) for a in keys ]
+		self.fields=[ (a, dict( label="%s" % (a,), type="DERIVE", min=0 )) for a in keys ]
 		self.info="The value of %s for every host running the service %s. Data source is %s." % (self.key, self.service,Configuration.url)
 		super(MuninPlugin, self).__init__()
 		
